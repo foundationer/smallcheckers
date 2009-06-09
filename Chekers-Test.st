@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <st-source>
-<time-stamp>From VisualWorks® NonCommercial, 7.5 of April 16, 2007 on May 31, 2009 at 4:25:33 pm</time-stamp>
+<time-stamp>From VisualWorks® NonCommercial, 7.6 of March 3, 2008 on June 9, 2009 at 3:42:48 pm</time-stamp>
 <!-- Package Changes for Chekers-Test* -->
 
 
@@ -34,7 +34,7 @@
 
 | aTable aPiece aPoint anotherPoint anotherPiece outSidePoint  |
 
-aTable := CheckersTable withDimensions: 8 by: 8.
+aTable := CheckersBoard rows: 8 columns: 8.
 aPiece := CheckersPiece new.
 aPoint := 1.
 anotherPiece := CheckersPiece new.
@@ -79,7 +79,7 @@ self
 
 | aTable aPiece aPoint oldPosition anotherPoint newPosition |
 
-aTable := CheckersTable withDimensions: 8 by: 8.
+aTable := CheckersBoard rows: 8 columns: 8.
 aPiece := CheckersPiece newBlack.
 aPoint := 1.
 aTable occupySquareAt: aPoint with: aPiece.
@@ -93,7 +93,7 @@ self deny: (oldPosition = newPosition)</body>
 
 | aTable aPiece aPoint |
 
-aTable := CheckersTable withDimensions: 8 by: 8.
+aTable := CheckersBoard rows: 8 columns: 8.
 aPiece := CheckersPiece new.
 aPoint := 1.
 aTable occupySquareAt: aPoint with: aPiece.
@@ -138,21 +138,6 @@ self assert:  ( aPiece positionInTable: aTable ) = aPoint</body>
 <methods>
 <class-id>CheckersGameTest</class-id> <category>initializeGameTest</category>
 
-<body package="Chekers-Test" selector="testFirstMove">testFirstMove
-
-| checkersGame pieceToMove board |
-
-checkersGame := CheckersGame withInitialConfiguration.
-
-board := checkersGame checkersTable.
-
-pieceToMove := board pieceAtSqueare: 9.
-
-pieceToMove  moveTo: 13 in: board.
-
-self
-	assert: (pieceToMove positionInTable: board) = 13</body>
-
 <body package="Chekers-Test" selector="testGameCreation">testGameCreation
 
 | checkersGame |
@@ -163,6 +148,55 @@ self
 	assert: checkersGame whitePiecesInGame = 12;
 	assert: checkersGame blackPiecesInGame = 12.
  </body>
+</methods>
+
+<methods>
+<class-id>CheckersGameTest</class-id> <category>testNormalPieceMovements</category>
+
+<body package="Chekers-Test" selector="testBackMove">testBackMove
+
+| checkersGame  aCheckersTable blackPieceToMove |
+
+checkersGame := CheckersGame withJumpConfiguration.
+
+aCheckersTable := checkersGame checkersBoard.
+
+blackPieceToMove := aCheckersTable pieceAtSquare: 30.
+
+self
+	should: [ blackPieceToMove moveToBackLeftBy: 1]
+	raise: IllegalMovementException</body>
+
+<body package="Chekers-Test" selector="testFirstMove">testFirstMove
+
+| checkersGame pieceToMove board |
+
+checkersGame := CheckersGame withInitialConfiguration.
+
+board := checkersGame checkersBoard.
+
+pieceToMove := board pieceAtSquare: 1.
+
+pieceToMove  moveToFowardRightBy: 1.
+
+self
+	assert: (board positionOf: pieceToMove) = 10</body>
+
+<body package="Chekers-Test" selector="testIllegalJumpMove">testIllegalJumpMove
+
+| checkersGame blackPieceToJump aCheckersTable |
+
+checkersGame := CheckersGame withJumpConfiguration.
+
+aCheckersTable := checkersGame checkersBoard.
+
+blackPieceToJump := aCheckersTable pieceAtSquare: 1.
+
+
+self	
+	should: [ blackPieceToJump moveToFowardRightBy: 3]
+	raise: IllegalMovementException
+	</body>
 
 <body package="Chekers-Test" selector="testJumpMove">testJumpMove
 
@@ -170,15 +204,36 @@ self
 
 checkersGame := CheckersGame withJumpConfiguration.
 
-aCheckersTable := checkersGame checkersTable.
+aCheckersTable := checkersGame checkersBoard.
 
-blackPieceToJump := aCheckersTable pieceAtSqueare: 1.
-aCheckersTable movePieceFrom: 1 to: 10.
+blackPieceToJump := aCheckersTable pieceAtSquare: 1.
+blackPieceToJump moveToFowardRightBy: 2.
 
 self
-	assert: (blackPieceToJump positionInTable: aCheckersTable) = 10;
-	deny: ( aCheckersTable hasAPieceAt: 6 ).</body>
+	assert: ( aCheckersTable positionOf: blackPieceToJump) = 19;
+	deny: ( aCheckersTable hasAPieceAt: 10 )</body>
+
+<body package="Chekers-Test" selector="testMoveOutOfBoard">testMoveOutOfBoard
+
+| checkersGame  aCheckersTable blackPieceToMove |
+
+checkersGame := CheckersGame withJumpConfiguration.
+
+aCheckersTable := checkersGame checkersBoard.
+
+blackPieceToMove := aCheckersTable pieceAtSquare: 1.
+
+self
+	should: [ blackPieceToMove moveForwardLeftBy: 1]
+	raise: IllegalMovementException</body>
 </methods>
+
+<reorganize>
+<class-id>CheckersGameTest</class-id> <organization>('initialize-release' #initialize)
+('initializeGameTest' #testGameCreation)
+('testNormalPieceMovements' #testBackMove #testFirstMove #testIllegalJumpMove #testJumpMove #testMoveOutOfBoard)
+</organization>
+</reorganize>
 
 <class>
 <name>TableTest</name>
@@ -207,7 +262,7 @@ self
 <body package="Chekers-Test" selector="testFreeASquare">testFreeASquare
 
 	| checkersTable piece tablePoint |
-	checkersTable := CheckersTable withDimensions: 8 by: 8.
+	checkersTable := CheckersBoard rows: 8 columns: 8.
 	piece := CheckersPiece new.
 	tablePoint := Point x: 1 y: 2.
 	checkersTable occupySquareAt: tablePoint with: piece.
@@ -218,7 +273,7 @@ self
 <body package="Chekers-Test" selector="testNumberOfBoxForATable">testNumberOfBoxForATable
 
 | damasTable |
-	damasTable := CheckersTable withDimensions: 8 by: 8.
+	damasTable := CheckersBoard rows: 8 columns: 8.
 	self assert: damasTable xNumberOfSquares = 8.
  	self assert: damasTable yNumberOfSquares = 8.</body>
 
@@ -226,7 +281,7 @@ self
 
 	| damasTable  aPiece aDefinedTablePoint aNotDefinedTablePoint |
 
-	damasTable := CheckersTable withDimensions: 8 by: 8.
+	damasTable := CheckersBoard rows: 8 columns: 8.
 	aDefinedTablePoint := Point x: 1 y: 1.
 	aNotDefinedTablePoint := Point x: 2 y: 1.
 	aPiece := 'somePiece'.
@@ -238,7 +293,7 @@ self
 	
 	| damasTable  aPiece aDefinedTablePoint |
 	
-	damasTable := CheckersTable withDimensions: 8 by: 8.
+	damasTable := CheckersBoard rows: 8 columns: 8.
 	aDefinedTablePoint := 33.
 	aPiece := 'somePiece'.
 	self 
@@ -247,20 +302,20 @@ self
 
 <body package="Chekers-Test" selector="testPositiveNumberOfBoxes">testPositiveNumberOfBoxes
 	self
-		should: [	CheckersTable withDimensions: -8 by: -8]
+		should: [	CheckersBoard rows: -8 columns: -8]
 		raise: CanNotCreateTableException.</body>
 
 <body package="Chekers-Test" selector="testTotalNumberOfBoxesInATable">testTotalNumberOfBoxesInATable
 
 	| damasTable |
-	damasTable := CheckersTable withDimensions: 8 by: 8.
+	damasTable := CheckersBoard rows: 8 columns: 8.
 	self assert: damasTable numberOfSquares = 64.</body>
 
 <body package="Chekers-Test" selector="testWhitePieces">testWhitePieces
 
 	| damasTable  aWhitePiece |
 
-	damasTable := CheckersTable withDimensions: 8 by: 8.
+	damasTable := CheckersBoard rows: 8 columns: 8.
 	aWhitePiece := CheckersPiece newWhite.
 
 	damasTable occupySquareAt: (Point x: 1 y: 2) with: aWhitePiece.
