@@ -1,0 +1,1 @@
+Checkers game made in Smalltalk, strongly based on OOP & TDD concepts.
